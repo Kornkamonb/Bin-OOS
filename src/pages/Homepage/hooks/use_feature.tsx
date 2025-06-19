@@ -19,17 +19,17 @@ export const use_feature = () => {
 
   const [panelTable, setPanelTable] = useState("");
 
-  const fetchPanelData = async () => {
+  const updatePanelData = async () => {
     const url =
-      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-panel";
-    const params = {
-      params: {
-        panel_sn: inputPanel,
-      },
+      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/put-panel";
+    const data = {
+      panel_list: inputPanel,
+      lot_no: inputLotNO,
+      op_code: inputOpId,
     };
     try {
       setLoading(true);
-      const response = await axios.get(url, params);
+      const response = await axios.put(url, data);
       setPanelData(response.data);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
