@@ -1,0 +1,61 @@
+@import "@fontsource/luckiest-guy";
+@import '@fontsource-variable/inter';
+
+@import "tailwindcss";
+
+@theme {
+    --breakpoint-xs: 375px;
+    --breakpoint-sm: 534px;
+    --breakpoint-md: 640px;
+    --breakpoint-lg: 1072px;
+    --breakpoint-xl: 1520px;
+    --breakpoint-2xl: 1872px;
+    --font-luckiest-guy: "Luckiest Guy", "cursive";
+    --font-Inter: "Inter Variable", "sans-serif";
+}
+
+@plugin "daisyui" {
+    themes: all;
+    /* root: ":root";
+    include: ;
+    exclude: ;
+    prefix: ;
+    logs: true; */
+}
+
+
+/* Responsive font sizes for different screen sizes */
+@media (min-width: 534px) {
+    html {
+        font-size: 14px;
+        font-family: 'Inter Variable', sans-serif;
+    }
+}
+
+@media (min-width: 640px) {
+    html {
+        font-size: 16px;
+        font-family: 'Inter Variable', sans-serif;
+    }
+}
+
+@media (min-width: 1072px) {
+    html {
+        font-size: 14px;
+        font-family: 'Inter Variable', sans-serif;
+    }
+}
+
+@media (min-width: 1520px) {
+    html {
+        font-size: 14px;
+        font-family: 'Inter Variable', sans-serif;
+    }
+}
+
+@media (min-width: 1872px) {
+    html {
+        font-size: 16px;
+        font-family: 'Inter Variable', sans-serif;
+    }
+}
