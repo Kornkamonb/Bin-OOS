@@ -14,7 +14,7 @@ import {
 } from "@mui/material/styles";
 // Lazy load components
 const Home = React.lazy(() => import("@/pages/Homepage/Homepage"));
-
+const Chart = React.lazy(() => import("@/pages/chart-analysis/main/page"));
 function App() {
   const [themeColors, setThemeColors] = useState<any>({});
 
@@ -92,6 +92,10 @@ function App() {
                 <Route
                   path="/template-typescript/homepage"
                   element={<Home />}
+                />
+                <Route
+                  path="/template-typescript/chart-analysis"
+                  element={<Chart />}
                 />
               </Route>
             </Routes>

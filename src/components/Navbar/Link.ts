@@ -19,6 +19,7 @@ export const Link = () => {
     Iconsmain: Iconsmain, // ใช้การ import รูปภาพที่ถูกต้อง
     SubPath: [
       { path: "/template-typescript/homepage", label: "Template Typescript" },
+      { path: "/template-typescript/chart-analysis", label: "Chart analysis" },
     ],
   };
 

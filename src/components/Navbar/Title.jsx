@@ -5,8 +5,8 @@ import { useLocation } from "react-router-dom";
 const titleMap = {
   "/template-typescript": "Template Typescript",
   "/template-typescript/homepage": "Template Typescript",
+  "/template-typescript/chart-analysis": "Chart analysis",
 };
-
 function Title() {
   const location = useLocation();
   const [title, setTitle] = useState("");
