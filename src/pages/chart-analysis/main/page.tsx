@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import Plotly from "plotly.js-dist";
 import { use_feature } from "../hooks/use_feature";
+import ProgressChart from '@/pages/chart-analysis/components/progresss_chart';
+import MonthlySummaryChart from "@/pages/chart-analysis/components/monthly_chart";
 
 const Chart_analysis = () => {
   const { reqRecord } = use_feature();
@@ -181,12 +183,29 @@ const Chart_analysis = () => {
   }, [reqRecord]);
 
   return (
+  <>
     <div className="container mx-auto p-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div id="Chart" className="w-full min-h-[600px]" />
       </div>
     </div>
-  );
+
+    <div className="chart-analysis-page">
+      <h1>PTE Department Analysis</h1>
+
+      <div className="chart-section">
+        <h2>Task Progress Overview</h2>
+        <ProgressChart />
+      </div>
+
+      <div className="chart-section">
+        <h2>Monthly Trends</h2>
+        <MonthlySummaryChart />
+      </div>
+    </div>
+  </>
+);
+
 };
 
 export default Chart_analysis;
