@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import Plotly from "plotly.js-dist";
+import { useEffect, useState, useMemo } from "react";
+import Plot from "react-plotly.js";
 
 interface ChartData {
   req_to_job: string;
@@ -17,17 +17,20 @@ interface MonthlyOverviewByJobChartProps {
 
 const MonthlyOverviewByJobChart = ({
   data,
-  chartId,
   title = "Monthly Records Overview",
 }: MonthlyOverviewByJobChartProps) => {
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  if (data && data.length === 0) {
+    return <>NOT FOUND</>;
+  }
+  const [selectedMonth, setSelectedMonth] = useState<string>("2024-10");
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Get unique months for autocomplete
-  const uniqueMonths = Array.from(
-    new Set(data.map((item) => item.month))
-  ).sort();
+  const uniqueMonths = useMemo(
+    () => Array.from(new Set(data.map((item) => item.month))).sort(),
+    [data]
+  );
 
   // Filter months based on input
   const filteredMonths = uniqueMonths.filter((month) =>
@@ -35,7 +38,10 @@ const MonthlyOverviewByJobChart = ({
   );
 
   useEffect(() => {
-    // Filter data based on selected month
+    setFilteredData(data);
+  }, [data]);
+
+  useEffect(() => {
     if (selectedMonth && uniqueMonths.includes(selectedMonth)) {
       const filtered = data.filter((item) => item.month === selectedMonth);
       setFilteredData(filtered);
@@ -45,9 +51,18 @@ const MonthlyOverviewByJobChart = ({
   }, [selectedMonth, data]);
 
   useEffect(() => {
-    if (!filteredData || filteredData.length === 0) return;
+    if (selectedMonth !== "" || null) {
+      setSelectedMonth(selectedMonth);
+    } else {
+      setSelectedMonth("2024-10");
+    }
+  }, [selectedMonth]);
 
-    const months = filteredData.map((item) => item.month);
+  const { plotData, layout } = useMemo(() => {
+    if (!filteredData || filteredData.length === 0) {
+      return { plotData: [], layout: {} };
+    }
+
     const job = filteredData.map((item) => item.req_to_job);
     const finished = filteredData.map((item) => Number(item.finished));
     const ongoing = filteredData.map((item) => Number(item.ongoing));
@@ -57,13 +72,13 @@ const MonthlyOverviewByJobChart = ({
       x: job,
       y: finished,
       name: "Finished",
-      type: "bar",
+      type: "bar" as const,
       marker: {
         color: "#5DE2E7",
         opacity: 0.8,
       },
       text: finished.map(String),
-      textposition: "auto",
+      textposition: "auto" as const,
       textfont: {
         color: "white",
         size: 15,
@@ -75,13 +90,13 @@ const MonthlyOverviewByJobChart = ({
       x: job,
       y: ongoing,
       name: "Ongoing",
-      type: "bar",
+      type: "bar" as const,
       marker: {
         color: "#f59e0b",
         opacity: 0.8,
       },
       text: ongoing.map(String),
-      textposition: "auto",
+      textposition: "auto" as const,
       textfont: {
         color: "white",
         size: 15,
@@ -93,8 +108,8 @@ const MonthlyOverviewByJobChart = ({
       x: job,
       y: total,
       name: "Total",
-      type: "scatter",
-      mode: "lines+markers+text",
+      type: "scatter" as const,
+      mode: "lines+markers+text" as const,
       marker: {
         color: "#3b82f6",
         size: 6,
@@ -106,7 +121,7 @@ const MonthlyOverviewByJobChart = ({
       line: {
         width: 2.5,
         color: "#3b82f6",
-        shape: "spline",
+        shape: "spline" as const,
       },
       text: total.map(String),
       textposition: "top center" as const,
@@ -122,7 +137,7 @@ const MonthlyOverviewByJobChart = ({
     const plotData = [traceFinished, traceOngoing, traceTotal];
 
     const layout = {
-      barmode: "stack",
+      barmode: "stack" as const,
       bargap: 0.3, // Add this line - controls gap between bar groups (0-1, where 0.3 = 30% gap)
       bargroupgap: 0.2, // Optional - controls gap between bars within a group
       title: {
@@ -172,7 +187,7 @@ const MonthlyOverviewByJobChart = ({
           },
           standoff: 20,
         },
-        rangemode: "tozero",
+        rangemode: "tozero" as const,
         tickfont: {
           family: "Inter, system-ui, sans-serif",
           size: 11,
@@ -188,11 +203,11 @@ const MonthlyOverviewByJobChart = ({
         zerolinewidth: 1,
       },
       legend: {
-        orientation: "v",
+        orientation: "v" as const,
         x: 1.02,
         y: 0.5,
-        xanchor: "left",
-        yanchor: "top",
+        xanchor: "left" as const,
+        yanchor: "top" as const,
         font: {
           family: "Inter, system-ui, sans-serif",
           size: 12,
@@ -209,7 +224,7 @@ const MonthlyOverviewByJobChart = ({
         t: 80,
         b: 80,
       },
-      hovermode: "x unified",
+      hovermode: "x unified" as const,
       hoverlabel: {
         bgcolor: "#1f2937",
         bordercolor: "#374151",
@@ -221,14 +236,14 @@ const MonthlyOverviewByJobChart = ({
       },
     };
 
-    const config = {
-      responsive: true,
-      displayModeBar: false,
-      showTips: false,
-    };
+    return { plotData, layout };
+  }, [filteredData, title]);
 
-    Plotly.newPlot(chartId, plotData, layout, config);
-  }, [filteredData, chartId, title, selectedMonth]);
+  const config = {
+    responsive: true,
+    displayModeBar: false,
+    showTips: false,
+  };
 
   const handleMonthSelect = (month: string) => {
     setSelectedMonth(month);
@@ -322,7 +337,21 @@ const MonthlyOverviewByJobChart = ({
         )}
       </div>
 
-      <div id={chartId} className="w-full min-h-[600px]" />
+      {/* Chart */}
+      {filteredData && filteredData.length > 0 ? (
+        <Plot
+          data={plotData}
+          layout={layout}
+          config={config}
+          className="w-full min-h-[600px]"
+          useResizeHandler={true}
+          style={{ width: "100%", height: "600px" }}
+        />
+      ) : (
+        <div className="w-full min-h-[600px] flex items-center justify-center text-gray-500">
+          No data available for the selected filter
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import Plotly from "plotly.js-dist";
+import { useMemo } from "react";
+import Plot from "react-plotly.js";
 
 interface ChartData {
   month: string;
@@ -16,11 +16,12 @@ interface MonthlyOverviewChartProps {
 
 const MonthlyOverviewChart = ({
   data,
-  chartId,
   title = "Monthly Records Overview",
 }: MonthlyOverviewChartProps) => {
-  useEffect(() => {
-    if (!data || data.length === 0) return;
+  const { plotData, layout } = useMemo(() => {
+    if (!data || data.length === 0) {
+      return { plotData: [], layout: {} };
+    }
 
     const months = data.map((item) => item.month);
     const finished = data.map((item) => Number(item.finished));
@@ -211,25 +212,36 @@ const MonthlyOverviewChart = ({
       showlegend: true,
     };
 
-    const config = {
-      responsive: true,
-      displayModeBar: false,
-      showTips: false,
-      autosizable: true,
-    };
+    return { plotData, layout };
+  }, [data, title]);
 
-    // Clear existing plot before creating new one
-    const plotDiv = document.getElementById(chartId);
-    if (plotDiv) {
-      Plotly.purge(plotDiv);
-    }
+  const config = {
+    responsive: true,
+    displayModeBar: false,
+    showTips: false,
+    autosizable: true,
+  };
 
-    Plotly.newPlot(chartId, plotData, layout, config);
-  }, [data, chartId, title]);
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="w-full min-h-[650px] flex items-center justify-center text-gray-500">
+          No data available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div id={chartId} className="w-full min-h-[650px]" />
+      <Plot
+        data={plotData}
+        layout={layout}
+        config={config}
+        className="w-full min-h-[650px]"
+        useResizeHandler={true}
+        style={{ width: "100%", height: "650px" }}
+      />
     </div>
   );
 };

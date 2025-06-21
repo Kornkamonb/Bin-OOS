@@ -5,21 +5,27 @@ export const use_feature = () => {
   const [reqRecord, setReqRecord] = useState([]);
   const [reqJob, setReqJob] = useState([]);
   const [reqSummary, setReqSummary] = useState([]);
+
   const fetchReqRecord = async () => {
     const url =
-      "http://10.17.66.124:8080/api/request_analysis/get_req_record_year";
+      "http://127.0.0.1:3000/api/request_analysis/get_req_record_yearV2";
     const params = {
       factory: "A1",
       dept: "PTE",
       from_year: "2024",
       to_year: "2025",
     };
-    const response = await axios.get(url, { params });
-    if (response) {
-      console.log(response);
-      setReqRecord(response.data);
-    } else {
-      setReqRecord([]);
+    try {
+      const response = await axios.get(url, { params });
+      if (response) {
+        console.log(response);
+        setReqRecord(response.data.data);
+      } else {
+        setReqRecord([]);
+      }
+    } catch (error) {
+      console.error("Fetch Data request job error:", error);
+      return null;
     }
   };
 
@@ -31,12 +37,17 @@ export const use_feature = () => {
       dept: "PTE",
       month: "2025-06",
     };
-    const response = await axios.get(url, { params });
-    if (response) {
-      console.log(response);
-      setReqJob(response.data);
-    } else {
-      setReqJob([]);
+    try {
+      const response = await axios.get(url, { params });
+      if (response) {
+        console.log(response.data.data);
+        setReqJob(response.data.data);
+      } else {
+        setReqJob([]);
+      }
+    } catch (error) {
+      console.error("Fetch Data request job error:", error);
+      return null;
     }
   };
 
@@ -48,26 +59,31 @@ export const use_feature = () => {
       from_year: "2024",
       to_year: "2025",
     };
-    const response = await axios.get(url, { params });
-    if (response) {
+    try {
+      const response = await axios.get(url, { params });
       console.log(response);
-      setReqSummary(response.data);
-    } else {
-      setReqSummary([]);
+      if (response.status === 200) {
+        if (response.data.status === "OK") {
+          setReqSummary(response.data.data);
+        }
+      } else {
+        setReqSummary([]);
+      }
+    } catch (error) {
+      console.error("Fetch Data request summary error:", error);
+      return null;
     }
   };
 
   useEffect(() => {
     fetchReqSummary();
-    fetchReqJob();
+    // fetchReqJob();
     fetchReqRecord();
   }, []);
 
   return {
     reqSummary,
-
     reqRecord,
-
     reqJob,
   };
 };
