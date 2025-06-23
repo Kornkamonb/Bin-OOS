@@ -1,58 +1,93 @@
-import { useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Plot from "react-plotly.js";
 
 interface ChartData {
+  req_to_job: string;
   month: string;
   finished: number | string;
   ongoing: number | string;
   total: number | string;
 }
 
-interface MonthlyOverviewChartProps {
+interface Monthly_ChartProps {
   data: ChartData[];
   chartId: string;
   title?: string;
 }
 
-const MonthlyOverviewChart = ({
+const MonthlyChart = ({
   data,
   title = "Monthly Records Overview",
-}: MonthlyOverviewChartProps) => {
+}: Monthly_ChartProps) => {
+  if (data && data.length === 0) {
+    return <>NOT FOUND</>;
+  }
+  const [selectedMonth, setSelectedMonth] = useState<string>("2024-10");
+  const [filteredData, setFilteredData] = useState<ChartData[]>(data);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Get unique months for autocomplete
+  const uniqueMonths = useMemo(
+    () => Array.from(new Set(data.map((item) => item.month))).sort(),
+    [data]
+  );
+
+  // Filter months based on input
+  const filteredMonths = uniqueMonths.filter((month) =>
+    month.toLowerCase().includes(selectedMonth.toLowerCase())
+  );
+
+  useEffect(() => {
+    setFilteredData(data);
+  }, [data]);
+
+  useEffect(() => {
+    if (selectedMonth && uniqueMonths.includes(selectedMonth)) {
+      const filtered = data.filter((item) => item.month === selectedMonth);
+      setFilteredData(filtered);
+    } else {
+      setFilteredData(data);
+    }
+  }, [selectedMonth, data]);
+
+  useEffect(() => {
+    if (selectedMonth !== "" || null) {
+      setSelectedMonth(selectedMonth);
+    } else {
+      setSelectedMonth("2024-10");
+    }
+  }, [selectedMonth]);
+
   const { plotData, layout } = useMemo(() => {
-    if (!data || data.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
       return { plotData: [], layout: {} };
     }
 
-    const months = data.map((item) => item.month);
-    const finished = data.map((item) => Number(item.finished));
-    const ongoing = data.map((item) => Number(item.ongoing));
-    const total = data.map((item) => Number(item.total));
+    const job = filteredData.map((item) => item.req_to_job);
+    const finished = filteredData.map((item) => Number(item.finished));
+    const ongoing = filteredData.map((item) => Number(item.ongoing));
+    const total = filteredData.map((item) => Number(item.total));
 
     const traceFinished = {
-      x: months,
+      x: job,
       y: finished,
       name: "Finished",
       type: "bar" as const,
       marker: {
-        color: "#10b981",
+        color: "#5DE2E7",
         opacity: 0.8,
       },
-      text: finished.map((val) => (val > 0 ? String(val) : "")),
-      textposition: "inside" as const,
+      text: finished.map(String),
+      textposition: "auto" as const,
       textfont: {
         color: "white",
         size: 15,
         family: "Inter, system-ui, sans-serif",
       },
-      hovertemplate:
-        "<b>%{fullData.name}</b><br>" +
-        "Month: %{x}<br>" +
-        "Count: %{y}<br>" +
-        "<extra></extra>",
     };
 
     const traceOngoing = {
-      x: months,
+      x: job,
       y: ongoing,
       name: "Ongoing",
       type: "bar" as const,
@@ -60,36 +95,31 @@ const MonthlyOverviewChart = ({
         color: "#f59e0b",
         opacity: 0.8,
       },
-      text: ongoing.map((val) => (val > 0 ? String(val) : "")),
-      textposition: "inside" as const,
+      text: ongoing.map(String),
+      textposition: "auto" as const,
       textfont: {
         color: "white",
-        size: 12,
+        size: 15,
         family: "Inter, system-ui, sans-serif",
       },
-      hovertemplate:
-        "<b>%{fullData.name}</b><br>" +
-        "Month: %{x}<br>" +
-        "Count: %{y}<br>" +
-        "<extra></extra>",
     };
 
     const traceTotal = {
-      x: months,
+      x: job,
       y: total,
       name: "Total",
       type: "scatter" as const,
       mode: "lines+markers+text" as const,
       marker: {
         color: "#3b82f6",
-        size: 8,
+        size: 6,
         line: {
           color: "#1d4ed8",
-          width: 2,
+          width: 1,
         },
       },
       line: {
-        width: 3,
+        width: 2.5,
         color: "#3b82f6",
         shape: "spline" as const,
       },
@@ -97,22 +127,19 @@ const MonthlyOverviewChart = ({
       textposition: "top center" as const,
       textfont: {
         color: "#1f2937",
-        size: 11,
+        size: 15,
         family: "Inter, system-ui, sans-serif",
         weight: "bold",
       },
       yaxis: "y",
-      hovertemplate:
-        "<b>%{fullData.name}</b><br>" +
-        "Month: %{x}<br>" +
-        "Count: %{y}<br>" +
-        "<extra></extra>",
     };
 
     const plotData = [traceFinished, traceOngoing, traceTotal];
 
     const layout = {
       barmode: "stack" as const,
+      bargap: 0.3, // Add this line - controls gap between bar groups (0-1, where 0.3 = 30% gap)
+      bargroupgap: 0.2, // Optional - controls gap between bars within a group
       title: {
         text: title,
         font: {
@@ -124,46 +151,46 @@ const MonthlyOverviewChart = ({
         xanchor: "center" as const,
         pad: { t: 20, b: 20 },
       },
+
       xaxis: {
         title: {
-          text: "Month",
+          text: "Job Type",
           font: {
             family: "Inter, system-ui, sans-serif",
-            size: 14,
+            size: 15,
             color: "#6b7280",
+            weight: 500,
           },
-          standoff: 25,
+          standoff: 20,
         },
-        tickangle: -90,
+        tickangle: -20,
         tickfont: {
           family: "Inter, system-ui, sans-serif",
-          size: 12,
+          size: 15,
           color: "#6b7280",
         },
-        tickmode: "array" as const,
-        tickvals: months,
-        ticktext: months,
+
         gridcolor: "#f3f4f6",
         gridwidth: 1,
         showline: true,
         linecolor: "#e5e7eb",
         linewidth: 1,
-        automargin: true,
       },
       yaxis: {
         title: {
           text: "Number of Records",
           font: {
             family: "Inter, system-ui, sans-serif",
-            size: 14,
+            size: 13,
             color: "#6b7280",
+            weight: 500,
           },
-          standoff: 25,
+          standoff: 20,
         },
         rangemode: "tozero" as const,
         tickfont: {
           family: "Inter, system-ui, sans-serif",
-          size: 12,
+          size: 11,
           color: "#6b7280",
         },
         gridcolor: "#f3f4f6",
@@ -174,30 +201,28 @@ const MonthlyOverviewChart = ({
         zeroline: true,
         zerolinecolor: "#d1d5db",
         zerolinewidth: 1,
-        automargin: true,
       },
       legend: {
         orientation: "v" as const,
-        x: 1.05,
+        x: 1.02,
         y: 0.5,
-        xanchor: "center" as const,
+        xanchor: "left" as const,
         yanchor: "top" as const,
         font: {
           family: "Inter, system-ui, sans-serif",
-          size: 13,
+          size: 12,
           color: "#374151",
         },
-        bgcolor: "rgba(255,255,255,0.9)",
-        bordercolor: "#e5e7eb",
-        borderwidth: 1,
+        bgcolor: "rgba(255,255,255,0)",
+        borderwidth: 0,
       },
       plot_bgcolor: "#ffffff",
       paper_bgcolor: "#ffffff",
       margin: {
-        l: 80,
-        r: 60,
-        t: 100,
-        b: 120,
+        l: 60,
+        r: 40,
+        t: 80,
+        b: 80,
       },
       hovermode: "x unified" as const,
       hoverlabel: {
@@ -209,41 +234,126 @@ const MonthlyOverviewChart = ({
           color: "white",
         },
       },
-      showlegend: true,
     };
 
     return { plotData, layout };
-  }, [data, title]);
+  }, [filteredData, title]);
 
   const config = {
     responsive: true,
     displayModeBar: false,
     showTips: false,
-    autosizable: true,
   };
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="w-full min-h-[650px] flex items-center justify-center text-gray-500">
-          No data available
-        </div>
-      </div>
-    );
-  }
+  const handleMonthSelect = (month: string) => {
+    setSelectedMonth(month);
+    setShowDropdown(false);
+  };
+
+  const clearFilter = () => {
+    setSelectedMonth("");
+    setShowDropdown(false);
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <Plot
-        data={plotData}
-        layout={layout}
-        config={config}
-        className="w-full min-h-[650px]"
-        useResizeHandler={true}
-        style={{ width: "100%", height: "650px" }}
-      />
+      {/* Month Filter */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Filter by Month
+        </label>
+        <div className="relative w-64">
+          <input
+            type="text"
+            value={selectedMonth}
+            onChange={(e) => {
+              setSelectedMonth(e.target.value);
+              setShowDropdown(true);
+            }}
+            onFocus={() => setShowDropdown(true)}
+            placeholder="Search or select month..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+
+          {/* Clear button */}
+          {selectedMonth && (
+            <button
+              onClick={clearFilter}
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          )}
+
+          {/* Dropdown arrow */}
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+          >
+            ▼
+          </button>
+
+          {/* Dropdown */}
+          {showDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+              {filteredMonths.length > 0 ? (
+                <>
+                  <button
+                    onClick={clearFilter}
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 text-gray-500 italic border-b"
+                  >
+                    Show All Months
+                  </button>
+                  {filteredMonths.map((month) => (
+                    <button
+                      key={month}
+                      onClick={() => handleMonthSelect(month)}
+                      className="w-full px-3 py-2 text-left hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      {month}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="px-3 py-2 text-gray-500">No months found</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Selected filter indicator */}
+        {selectedMonth && uniqueMonths.includes(selectedMonth) && (
+          <div className="mt-2 flex items-center">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {selectedMonth}
+              <button
+                onClick={clearFilter}
+                className="ml-1 text-blue-600 hover:text-blue-800"
+              >
+                ✕
+              </button>
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Chart */}
+      {filteredData && filteredData.length > 0 ? (
+        <Plot
+          data={plotData}
+          layout={layout}
+          config={config}
+          className="w-full min-h-[600px]"
+          useResizeHandler={true}
+          style={{ width: "100%", height: "600px" }}
+        />
+      ) : (
+        <div className="w-full min-h-[600px] flex items-center justify-center text-gray-500">
+          No data available for the selected filter
+        </div>
+      )}
     </div>
   );
 };
 
-export default MonthlyOverviewChart;
+export default MonthlyChart;
