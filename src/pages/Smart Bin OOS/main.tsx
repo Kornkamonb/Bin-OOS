@@ -1,13 +1,10 @@
 import { use_feature } from "./hooks/use_feature";
 import Table_MUIX from "./components/Table_MUIX";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 const Homepage = () => {
   const {
     cardData,
-    setCardData,
-
-    panelData,
-    setPanelData,
 
     inputLotNO,
     setInputLotNO,
@@ -18,27 +15,28 @@ const Homepage = () => {
     inputPanel,
     setInputPanel,
 
-    updateRecord,
-    setUpdateRecord,
     loading,
-    setLoading,
 
     error,
-    setError,
 
-    handle_update_record,
     isCheckboxChecked,
     setIsCheckboxChecked,
 
-    panelTable,
-    setPanelTable,
+    panelList,
+
+    handleKeyDown,
+
+    handleSmartBinOOSSubmit,
   } = use_feature();
 
   const handleCheckboxChange = (checked: boolean) => {
     setIsCheckboxChecked(checked);
   };
 
-  const columns = [{}];
+  const columns: GridColDef[] = [
+    { field: "id", headerName: "ID", width: 100 },
+    { field: "name", headerName: "Panel Name", flex: 1 },
+  ];
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -99,18 +97,43 @@ const Homepage = () => {
             </div>
           )}
           {cardData && !loading && (
-            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className=" space-x-4 flex">
+              {/* <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center col-span-2">
                   <span className="text-white font-bold text-lg">📊</span>
-                </div>
-                <div>
-                  <div className="mt-2 text-sm text-gray-500">
-                    <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto">
-                      {JSON.stringify(cardData, null, 2)}
-                    </pre>
+                </div> */}
+              <div className="space-y-1">
+                {cardData && cardData.length > 0 ? (
+                  cardData.map((item, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-100 p-6 rounded-xl shadow-sm border border-gray-200"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <span className="text-white font-bold text-6xl">
+                          🚩
+                        </span>
+                        <div className="flex flex-col">
+                          <div className="text-xl font-semibold text-gray-500">
+                            Product Name :{" "}
+                            <span className="text-xl font-semibold text-blue-600">
+                              {item.product_name}
+                            </span>
+                          </div>
+                          <div className="text-xl font-semibold text-gray-500">
+                            Count OOS :{" "}
+                            <span className="text-xl font-semibold text-blue-600">
+                              {item.c_oos}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-gray-400">
+                    No data available.
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -126,6 +149,7 @@ const Homepage = () => {
           type="text"
           value={inputPanel || ""}
           onChange={(e) => setInputPanel(e.target.value)}
+          onKeyDown={handleKeyDown} // กด Enter จะเพิ่มข้อมูล
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter Sheet NO."
         />
@@ -133,7 +157,7 @@ const Homepage = () => {
       <div>
         <h2>Sheet NO.</h2>
         <Table_MUIX
-          datas={panelTable}
+          datas={panelList}
           columns={columns}
           not_show_Count={false}
           loading={false}
@@ -144,9 +168,7 @@ const Homepage = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <button
-            onClick={() => {
-              handle_update_record();
-            }}
+            onClick={handleSmartBinOOSSubmit}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${"bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"}`}
           >
             Finish
