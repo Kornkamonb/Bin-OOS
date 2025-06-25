@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 export const use_feature = () => {
   interface PanelItem {
     id: number;
-    name: string;
+    panel_sn: string;
+    bin: string;
   }
 
   const [cardData, setCardData] = useState<any>([]);
@@ -14,7 +15,7 @@ export const use_feature = () => {
   const [inputOpId, setInputOpId] = useState<string>("");
   const [inputPanel, setInputPanel] = useState<string>("");
 
-  const [panelList, setPanelList] = useState<PanelItem[]>([]);
+  // const [panelData, setpanelData] = useState<PanelItem[]>([]);
   const [nextId, setNextId] = useState<number>(1);
 
   const [updateRecord, setUpdateRecord] = useState<any>([]);
@@ -23,28 +24,104 @@ export const use_feature = () => {
 
   const [isCheckboxChecked, setIsCheckboxChecked] = useState<boolean>(false);
 
-  const handleAddPanel = () => {
-    if (inputPanel.trim() === "") return;
+  // Debug panel list changes
+  useEffect(() => {
+    console.log("Panel list updated:", panelData);
+  }, [panelData]);
 
-    const newPanel: PanelItem = {
-      id: nextId,
-      name: inputPanel.trim(),
+  const fetchCardData = async () => {
+    const url =
+      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-card";
+    const params = {
+      params: {
+        lot_no: inputLotNO,
+      },
     };
 
-    setPanelList((prev) => [...prev, newPanel]);
-    setNextId((id) => id + 1);
-    setInputPanel(""); // Clear input
+    try {
+      setLoading(true);
+      const response = await axios.get(url, params);
+      setCardData(response.data.data);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const fetchPanelData = async () => {
+    if (!inputPanel.trim()) return;
+
+    const url =
+      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-panel";
+    const params = {
+      panel_sn: inputPanel,
+    };
+
+    try {
+      setLoading(true);
+      const response = await axios.get(url, { params });
+      console.log("API Response:", response.data);
+      // Add the panel directly to the list
+      const trimmedName = inputPanel.trim();
+      // Check for duplicates
+      const isDuplicate = panelData.some(
+        (item) => item.panel_sn === trimmedName
+      );
+      const apiRow = response.data.data;
+      if (!isDuplicate) {
+        const newPanel: PanelItem = {
+          id: nextId,
+          panel_sn: apiRow.panel_sn,
+          bin: apiRow.bin,
+        };
+        setPanelData((prev) => [...prev, newPanel]);
+        setNextId((prevId) => prevId + 1);
+      }
+      // Clear input after adding
+      setInputPanel("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+      console.error("Error fetching panel data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // const handleAddPanel = () => {
+  //   const trimmedName = inputPanel.trim();
+  //   if (trimmedName === "") return;
+  //   // Check for duplicates
+  //   const isDuplicate = panelData.some((item) => item.panel_sn === trimmedName);
+  //   if (isDuplicate) {
+  //     console.log(`Panel ${trimmedName} already exists in the list`);
+  //     return;
+  //   }
+  //   // Create new panel with current nextId
+  //   const newPanel: PanelItem = {
+  //     id: nextId,
+  //     panel_sn: apiRow.panel_sn,
+  //     bin: apiRow.bin,
+  //   };
+  //   // Update panel list with the new panel
+  //   setpanelData((prevList) => [...prevList, newPanel]);
+  //   // Increment nextId for the next panel
+  //   setNextId((prevId) => prevId + 1);
+  //   // Clear the input field
+  //   setInputPanel("");
+  //   console.log("Added new panel:", newPanel);
+  // };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddPanel();
+    if (e.key === "Enter" && inputPanel.trim()) {
+      e.preventDefault(); // Prevent form submission
+      fetchPanelData();
     }
   };
 
   // Updated function to handle button click with condition check
   const handleSmartBinOOSSubmit = async () => {
-    if (panelList.length === 0) {
+    if (panelData.length === 0) {
       setError("No panels added to the list");
       return;
     }
@@ -54,8 +131,8 @@ export const use_feature = () => {
       return;
     }
 
-    // Get the last panel ID from panelList
-    const lastPanelId = panelList[panelList.length - 1].id;
+    // Get the last panel ID from panelData
+    const lastPanelId = panelData[panelData.length - 1].id;
 
     // Get c_oos from the first item in cardData array and convert to number
     const cOosValue = parseInt(cardData[0].c_oos);
@@ -87,16 +164,17 @@ export const use_feature = () => {
       "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/post-panel";
 
     const data = {
-      panel_list: panelList, // ส่งรายการทั้งหมด ไม่ใช่ inputPanel เดี่ยวๆ
+      panel_list: panelData,
       lot_no: inputLotNO,
       op_code: inputOpId,
     };
-
     try {
       setLoading(true);
       const response = await axios.post(url, data);
       setUpdateRecord(response.data);
       console.log("API Response:", response.data);
+      setpanelData([]);
+      setNextId(1);
     } catch (err: any) {
       setUpdateRecord([]);
       setError(err.message || "Something went wrong");
@@ -106,25 +184,28 @@ export const use_feature = () => {
     }
   };
 
-  const fetchCardData = async () => {
-    const url =
-      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-card";
-    const params = {
-      params: {
-        lot_no: inputLotNO,
-      },
-    };
+  // const updatePanelData = async () => {
+  //   const url =
+  //     "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/post-panel";
 
-    try {
-      setLoading(true);
-      const response = await axios.get(url, params);
-      setCardData(response.data.data);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   const data = {
+  //     panel_list: panelData, // ส่งรายการทั้งหมด ไม่ใช่ inputPanel เดี่ยวๆ
+  //     lot_no: inputLotNO,
+  //     op_code: inputOpId,
+  //   };
+  //   try {
+  //     setLoading(true);
+  //     const response = await axios.post(url, data);
+  //     setUpdateRecord(response.data);
+  //     console.log("API Response:", response.data);
+  //   } catch (err: any) {
+  //     setUpdateRecord([]);
+  //     setError(err.message || "Something went wrong");
+  //     throw err; // Re-throw to handle in calling function
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     if (inputLotNO !== "" && isCheckboxChecked) {
@@ -135,9 +216,6 @@ export const use_feature = () => {
   return {
     cardData,
     setCardData,
-
-    panelData,
-    setPanelData,
 
     inputLotNO,
     setInputLotNO,
@@ -160,15 +238,13 @@ export const use_feature = () => {
     isCheckboxChecked,
     setIsCheckboxChecked,
 
-    updatePanelData,
+    // updatePanelData,
 
-    panelList,
-    setPanelList,
+    panelData,
 
     handleKeyDown,
-    handleAddPanel,
+    // handleAddPanel,
 
-    // Export the new function
     handleSmartBinOOSSubmit,
   };
 };

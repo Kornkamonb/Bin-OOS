@@ -101,7 +101,7 @@ function Table_MUIX({ datas, columns, not_show_Count, loading }: Props_Type) {
     <>
       <div
         style={{
-          height: 600,
+          height: 400,
           width: "100%",
         }}
         className="grid grid-rows-1 gap-2  mt-2 "

@@ -22,7 +22,7 @@ const Homepage = () => {
     isCheckboxChecked,
     setIsCheckboxChecked,
 
-    panelList,
+    panelData,
 
     handleKeyDown,
 
@@ -34,8 +34,8 @@ const Homepage = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 100 },
-    { field: "name", headerName: "Panel Name", flex: 1 },
+    { field: "panel_sn", headerName: "Sheet NO", flex: 1, minWidth: 200 },
+    { field: "bin", headerName: "Bin", flex: 1 },
   ];
 
   return (
@@ -98,9 +98,6 @@ const Homepage = () => {
           )}
           {cardData && !loading && (
             <div className=" space-x-4 flex">
-              {/* <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center col-span-2">
-                  <span className="text-white font-bold text-lg">📊</span>
-                </div> */}
               <div className="space-y-1">
                 {cardData && cardData.length > 0 ? (
                   cardData.map((item, index) => (
@@ -156,11 +153,12 @@ const Homepage = () => {
       </div>
       <div>
         <h2>Sheet NO.</h2>
-        <Table_MUIX
-          datas={panelList}
+        <DataGrid
+          rows={panelData}
           columns={columns}
-          not_show_Count={false}
+          // not_show_Count={false}
           loading={false}
+          getRowId={(row) => row.id}
         />
       </div>
 
