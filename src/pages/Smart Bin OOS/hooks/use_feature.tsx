@@ -6,6 +6,7 @@ export const use_feature = () => {
     id: number;
     panel_sn: string;
     bin: string;
+    product_name: string;
   }
 
   const [cardData, setCardData] = useState<any>([]);
@@ -78,6 +79,7 @@ export const use_feature = () => {
           id: nextId,
           panel_sn: trimmedName,
           bin: apiRow.bin,
+          product_name: apiRow.product_name,
         };
         setPanelData((prev) => [...prev, newPanel]);
         setNextId((prevId) => prevId + 1);
@@ -134,10 +136,15 @@ export const use_feature = () => {
     const url =
       "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/post-panel";
 
+    const productNames = panelData.map((p) => p.product_name?.trim());
+    const distinct = Array.from(new Set(productNames));
+    const oneProductName = distinct[0] ?? "";
+
     const data = {
-      panel_list: panelData.map((item) => item.panel_sn),
+      panel_list: panelData.map((p) => p.panel_sn).join(", "),
       lot_no: inputLotNO,
       op_code: inputOpId,
+      product_name: oneProductName,
     };
 
     try {
