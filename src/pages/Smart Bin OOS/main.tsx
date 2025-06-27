@@ -1,6 +1,11 @@
 import { use_feature } from "./hooks/use_feature";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
+interface CardDataItem {
+  product_name: string;
+  c_oos: number;
+}
+
 const Homepage = () => {
   const {
     cardData,
@@ -103,7 +108,7 @@ const Homepage = () => {
             <div className=" space-x-4 flex">
               <div className="space-y-1">
                 {cardData && cardData.length > 0 ? (
-                  cardData.map((item, index) => (
+                  cardData.map((item: CardDataItem, index: number) => (
                     <div
                       key={index}
                       className="bg-gray-100 p-6 rounded-xl shadow-sm border border-gray-200"
