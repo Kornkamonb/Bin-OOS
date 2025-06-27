@@ -42,7 +42,7 @@
     "react-snowfall": "^2.2.0",
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.5",
-    "sweetalert2": "^11.22.0"
+    "sweetalert2": "^11.22.1"
   },
   "devDependencies": {
     "@types/culori": "^2.1.1",

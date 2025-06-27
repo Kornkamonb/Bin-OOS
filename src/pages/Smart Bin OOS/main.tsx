@@ -1,5 +1,4 @@
 import { use_feature } from "./hooks/use_feature";
-import Table_MUIX from "./components/Table_MUIX";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 const Homepage = () => {
@@ -16,8 +15,6 @@ const Homepage = () => {
     setInputPanel,
 
     loading,
-
-    error,
 
     isCheckboxChecked,
     setIsCheckboxChecked,
@@ -68,13 +65,24 @@ const Homepage = () => {
               placeholder="Enter Operator ID"
             />
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 relative group">
             <input
               type="checkbox"
               checked={isCheckboxChecked}
               onChange={(e) => handleCheckboxChange(e.target.checked)}
-              className="w-10 h-10 text-blue-600 bg-gray-100 border-gray-300 rounded-full focus:ring-blue-500 focus:ring-2 mt-6"
+              className={`w-10 h-10 text-blue-600 bg-gray-100 border-gray-300 rounded-full focus:ring-blue-500 focus:ring-2 mt-6 ${
+                !inputLotNO || !inputOpId
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              disabled={!inputLotNO || !inputOpId}
+              title={
+                !inputLotNO || !inputOpId
+                  ? "Please enter Lot Number and Operator ID first"
+                  : ""
+              }
             />
+
             <label className="text-xl font-medium text-gray-700 justify-center mt-6">
               Show count OOS
             </label>
@@ -89,11 +97,6 @@ const Homepage = () => {
           {loading && (
             <div className="text-center py-4">
               <span className="text-gray-500">Loading card data...</span>
-            </div>
-          )}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              Error: {error}
             </div>
           )}
           {cardData && !loading && (

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2"; // Add this import at the top
 
 export const use_feature = () => {
   interface PanelItem {
@@ -121,14 +122,41 @@ export const use_feature = () => {
     if (lastPanelId === cOosValue) {
       try {
         await updatePanelData();
-        console.log("Panel data updated successfully - condition met!");
+        console.log("Panel data updated successfully");
         setError(null);
+
+        // Show success alert with SweetAlert2
+        Swal.fire({
+          title: "Success!",
+          text: "Panel data updated successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3085d6",
+        });
       } catch (err) {
         console.error("Failed to update panel data:", err);
+
+        // Optionally show error alert
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to update panel data",
+          icon: "error",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#d33",
+        });
       }
     } else {
       const errorMsg = `Count Sheet (${lastPanelId}) does not match Count OOS (${cOosValue})`;
       setError(errorMsg);
+
+      // Show mismatch error alert
+      Swal.fire({
+        title: "Validation Error",
+        text: errorMsg,
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#f8bb86",
+      });
     }
   };
 
@@ -161,14 +189,24 @@ export const use_feature = () => {
       throw err;
     } finally {
       setLoading(false);
+      setIsCheckboxChecked(false);
+      setInputLotNO("");
+      setInputOpId("");
+      setCardData("");
     }
   };
 
   useEffect(() => {
     if (inputLotNO !== "" && isCheckboxChecked) {
       fetchCardData();
+    } else {
+      setCardData("");
+      setInputOpId("");
+      setInputPanel("");
+      setPanelData([]);
+      setIsCheckboxChecked(false);
     }
-  }, [isCheckboxChecked]);
+  }, [inputLotNO, isCheckboxChecked]);
 
   return {
     cardData,
