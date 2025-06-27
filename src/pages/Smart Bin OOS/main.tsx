@@ -36,8 +36,21 @@ const Homepage = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: "panel_sn", headerName: "Sheet NO", flex: 1, minWidth: 200 },
-    { field: "bin", headerName: "Bin", flex: 1 },
+    {
+      field: "panel_sn",
+      headerName: "Sheet NO",
+      flex: 1,
+      minWidth: 200,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "bin",
+      headerName: "Bin",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+    },
   ];
 
   return (
@@ -175,7 +188,17 @@ const Homepage = () => {
         <div className="flex items-center justify-between">
           <button
             onClick={handleSmartBinOOSSubmit}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${"bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"}`}
+            className={`px-6 py-2 rounded-md font-medium transition-colors ${
+              !inputLotNO || !inputOpId
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            }`}
+            disabled={!inputLotNO || !inputOpId}
+            title={
+              !inputLotNO || !inputOpId
+                ? "Please enter Lot Number and Operator ID"
+                : ""
+            }
           >
             Finish
           </button>
