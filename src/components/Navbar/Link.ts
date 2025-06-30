@@ -18,8 +18,9 @@ export const Link = () => {
     Title: "TITLE",
     Iconsmain: Iconsmain, // ใช้การ import รูปภาพที่ถูกต้อง
     SubPath: [
-      { path: "/template-typescript/homepage", label: "Template Typescript" },
+      { path: "/template-typescript/homepage", label: "OT Summary By Day" },
       { path: "/template-typescript/chart-analysis", label: "Chart analysis" },
+      { path: "/template-typescript/ot-summary-by-month", label: "OT Summary By Month" },
     ],
   };
 

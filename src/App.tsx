@@ -14,9 +14,13 @@ import {
 } from "@mui/material/styles";
 // Lazy load components
 const Smart_Bin_OOS = React.lazy(
-  () => import("@/pages/Smart Bin OOS/main/main")
+  () => import("@/pages/ot-summary-by-day/main/main")
 );
 const Chart = React.lazy(() => import("@/pages/chart-analysis/main/page"));
+
+const Ot_summary_by_month = React.lazy(
+  () => import("@/pages/ot-summary-by-month/main/main")
+);
 function App() {
   const [themeColors, setThemeColors] = useState<any>({});
 
@@ -98,6 +102,10 @@ function App() {
                 <Route
                   path="/template-typescript/chart-analysis"
                   element={<Chart />}
+                />
+                <Route
+                  path="/template-typescript/ot-summary-by-month"
+                  element={<Ot_summary_by_month />}
                 />
               </Route>
             </Routes>
