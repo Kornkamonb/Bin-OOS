@@ -1,241 +1,132 @@
+// hooks/use_feature.ts
 import axios from "axios";
-import { useState, useEffect } from "react";
-import Swal from "sweetalert2"; // Add this import at the top
+import dayjs from "dayjs";
+import { useState, useEffect, useCallback } from "react";
+
+/** แปลงวันที่ใด ๆ ให้เป็น DD-MM-YYYY (รองรับฟอร์แมทเก่า) */
+const toDDMMYYYY = (d: string) =>
+  dayjs(d, ["YYYY-MM-DD", "DD-MM-YYYY"]).format("DD-MM-YYYY");
 
 export const use_feature = () => {
-  interface PanelItem {
-    id: number;
-    panel_sn: string;
-    bin: string;
-    product_name: string;
-  }
+  /* ---------- state ---------- */
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [deptData, setDeptData] = useState<any[]>([]);
+  const [divData, setDivData] = useState<any[]>([]);
 
-  const [cardData, setCardData] = useState<any>([]);
-  const [panelData, setPanelData] = useState<PanelItem[]>([]); // ✅ ใช้ชนิดถูกต้อง
+  const [select_dateTo, setSelect_dateTo] = useState<string>(
+    dayjs().format("YYYY-MM-DD")
+  );
+  const [select_dateFrom, setSelect_dateFrom] = useState<string>(
+    dayjs().subtract(60, "day").format("YYYY-MM-DD")
+  );
 
-  const [inputLotNO, setInputLotNO] = useState<string>("");
-  const [inputOpId, setInputOpId] = useState<string>("");
-  const [inputPanel, setInputPanel] = useState<string>("");
+  const [selectedDiv, setSelectedDiv] = useState<string>("");
+  const [selectedDept, setSelectedDept] = useState<string>("");
 
-  const [nextId, setNextId] = useState<number>(1);
-  const [updateRecord, setUpdateRecord] = useState<any>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isCheckboxChecked, setIsCheckboxChecked] = useState<boolean>(false);
 
-  // ✅ Debug panel list changes
-  useEffect(() => {
-    console.log("Panel list updated:", panelData);
-  }, [panelData]);
+  /* ---------- helpers ---------- */
+  const axiosGet = async <T,>(
+    url: string,
+    params: Record<string, unknown>,
+    setter: (data: T) => void
+  ) => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(url, { params });
+      setter(data.data);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const fetchCardData = async () => {
-    const url =
-      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-card";
-    const params = {
-      params: {
-        lot_no: inputLotNO,
+  /* ---------- fetchers ---------- */
+  const fetchDistinctDept = useCallback(() => {
+    if (!select_dateFrom || !select_dateTo) return;
+    axiosGet(
+      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-day/get-available-departments",
+      {
+        dateFrom: toDDMMYYYY(select_dateFrom),
+        dateTo: toDDMMYYYY(select_dateTo),
       },
-    };
+      setDeptData
+    );
+  }, [select_dateFrom, select_dateTo]);
 
-    try {
-      setLoading(true);
-      const response = await axios.get(url, params);
-      setCardData(response.data.data);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchDistinctDiv = useCallback(() => {
+    if (!selectedDept) return;
+    axiosGet(
+      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-day/get-available-divisions",
+      {
+        dateFrom: toDDMMYYYY(select_dateFrom),
+        dateTo: toDDMMYYYY(select_dateTo),
+        mhr_dept: selectedDept,
+      },
+      setDivData
+    );
+  }, [select_dateFrom, select_dateTo, selectedDept]);
 
-  const fetchPanelData = async () => {
-    if (!inputPanel.trim()) return;
+  const fetchDataTable = useCallback(() => {
+    if (!selectedDiv || !selectedDept) return;
+    axiosGet(
+      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-day/get-table",
+      {
+        dateFrom: toDDMMYYYY(select_dateFrom),
+        dateTo: toDDMMYYYY(select_dateTo),
+        mhr_div: selectedDiv,
+        mhr_dept: selectedDept,
+      },
+      setTableData
+    );
+  }, [select_dateFrom, select_dateTo, selectedDiv, selectedDept]);
 
-    const url =
-      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/get-panel";
+  /* ---------- side‑effects ---------- */
+  // โหลด department เมื่อวันที่เปลี่ยน
+  useEffect(fetchDistinctDept, [fetchDistinctDept]);
 
-    try {
-      setLoading(true);
-      const response = await axios.get(url, {
-        params: { panel_sn: inputPanel },
-      });
-      console.log("Raw response:", response.data);
-
-      // ✅ ตรวจว่าข้อมูลเป็น array หรือ object
-      const apiData = response.data.data;
-      const apiRow = Array.isArray(apiData) ? apiData[0] : apiData;
-
-      if (!apiRow?.panel_sn || !apiRow?.bin) {
-        console.warn("Missing panel_sn or bin in response:", apiRow);
-        return;
-      }
-
-      const trimmedName = apiRow.panel_sn.trim();
-      const isDuplicate = panelData.some(
-        (item) => item.panel_sn === trimmedName
-      );
-
-      if (!isDuplicate) {
-        const newPanel: PanelItem = {
-          id: nextId,
-          panel_sn: trimmedName,
-          bin: apiRow.bin,
-          product_name: apiRow.product_name,
-        };
-        setPanelData((prev) => [...prev, newPanel]);
-        setNextId((prevId) => prevId + 1);
-      }
-
-      setInputPanel("");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-      console.error("Error fetching panel data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputPanel.trim()) {
-      e.preventDefault();
-      fetchPanelData();
-    }
-  };
-
-  const handleSmartBinOOSSubmit = async () => {
-    if (panelData.length === 0) {
-      setError("No panels added to the list");
-      return;
-    }
-
-    if (!cardData || cardData.length === 0) {
-      setError("No card data available");
-      return;
-    }
-
-    const lastPanelId = panelData[panelData.length - 1].id;
-    const cOosValue = parseInt(cardData[0].c_oos);
-
-    console.log("Last Panel ID:", lastPanelId);
-    console.log("Card Data c_oos:", cOosValue);
-
-    if (lastPanelId === cOosValue) {
-      try {
-        await updatePanelData();
-        console.log("Panel data updated successfully");
-        setError(null);
-
-        // Show success alert with SweetAlert2
-        Swal.fire({
-          title: "Success!",
-          text: "Panel data updated successfully",
-          icon: "success",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#3085d6",
-        });
-      } catch (err) {
-        console.error("Failed to update panel data:", err);
-
-        // Optionally show error alert
-        Swal.fire({
-          title: "Error!",
-          text: "Failed to update panel data",
-          icon: "error",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#d33",
-        });
-      }
-    } else {
-      const errorMsg = `Count Sheet (${lastPanelId}) does not match Count OOS (${cOosValue})`;
-      setError(errorMsg);
-
-      // Show mismatch error alert
-      Swal.fire({
-        title: "Validation Error",
-        text: errorMsg,
-        icon: "warning",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#f8bb86",
-      });
-    }
-  };
-
-  const updatePanelData = async () => {
-    const url =
-      "http://127.0.0.1:3000/api/nest/smart_bin_oos_record/bin_record/post-panel";
-
-    const productNames = panelData.map((p) => p.product_name?.trim());
-    const distinct = Array.from(new Set(productNames));
-    const oneProductName = distinct[0] ?? "";
-
-    const data = {
-      panel_list: panelData.map((p) => p.panel_sn).join(", "),
-      lot_no: inputLotNO,
-      op_code: inputOpId,
-      product_name: oneProductName,
-    };
-
-    try {
-      setLoading(true);
-      const response = await axios.post(url, data);
-      setUpdateRecord(response.data);
-      console.log("API Response:", response.data);
-
-      setPanelData([]); // ✅ reset panelData อย่างถูกต้อง
-      setNextId(1);
-    } catch (err: any) {
-      setUpdateRecord([]);
-      setError(err.message || "Something went wrong");
-      throw err;
-    } finally {
-      setLoading(false);
-      setIsCheckboxChecked(false);
-      setInputLotNO("");
-      setInputOpId("");
-      setCardData("");
-    }
-  };
-
+  // โหลด division เมื่อ department เปลี่ยน
   useEffect(() => {
-    if (inputLotNO !== "" && isCheckboxChecked) {
-      fetchCardData();
-    } else {
-      setCardData("");
-      setInputOpId("");
-      setInputPanel("");
-      setPanelData([]);
-      setIsCheckboxChecked(false);
+    if (selectedDept) fetchDistinctDiv();
+    else {
+      setDivData([]);
+      setTableData([]);
+      setSelectedDiv("");
     }
-  }, [inputLotNO, isCheckboxChecked]);
+  }, [selectedDept, fetchDistinctDiv]);
 
+  // เคลียร์ตารางถ้า div ถูกรีเซ็ต
+  useEffect(() => {
+    if (!selectedDiv) setTableData([]);
+  }, [selectedDiv]);
+
+  /* ---------- exposed API ---------- */
   return {
-    cardData,
-    setCardData,
-
-    inputLotNO,
-    setInputLotNO,
-
-    inputOpId,
-    setInputOpId,
-
-    inputPanel,
-    setInputPanel,
-
-    updateRecord,
-    setUpdateRecord,
-
+    /* loading / error */
     loading,
-    setLoading,
-
     error,
     setError,
 
-    isCheckboxChecked,
-    setIsCheckboxChecked,
+    /* selections */
+    selectedDiv,
+    setSelectedDiv,
+    selectedDept,
+    setSelectedDept,
 
-    panelData,
+    /* date pickers */
+    select_dateFrom,
+    setSelect_dateFrom,
+    select_dateTo,
+    setSelect_dateTo,
 
-    handleKeyDown,
-    handleSmartBinOOSSubmit,
+    /* data */
+    tableData,
+    deptData,
+    divData,
+
+    /* actions */
+    fetchDataTable,
   };
 };

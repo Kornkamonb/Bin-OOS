@@ -13,7 +13,9 @@ import {
   createTheme,
 } from "@mui/material/styles";
 // Lazy load components
-const Smart_Bin_OOS = React.lazy(() => import("@/pages/Smart Bin OOS/main"));
+const Smart_Bin_OOS = React.lazy(
+  () => import("@/pages/Smart Bin OOS/main/main")
+);
 const Chart = React.lazy(() => import("@/pages/chart-analysis/main/page"));
 function App() {
   const [themeColors, setThemeColors] = useState<any>({});
