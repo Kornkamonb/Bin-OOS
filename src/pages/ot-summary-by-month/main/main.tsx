@@ -84,7 +84,7 @@ const Homepage = () => {
       field: "dlh_cc",
       headerName: "Cost Center",
       flex: 1,
-      minWidth: 350,
+      minWidth: 400,
       headerAlign: "center",
       align: "center",
     },

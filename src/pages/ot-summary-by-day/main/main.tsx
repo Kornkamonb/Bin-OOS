@@ -85,7 +85,7 @@ const Homepage = () => {
       field: "dlh_cc",
       headerName: "Cost Center",
       flex: 1,
-      minWidth: 350,
+      minWidth: 400,
       headerAlign: "center",
       align: "center",
     },
@@ -124,7 +124,7 @@ const Homepage = () => {
       field: "dlh_clocking_date_from",
       headerName: "Clocking From",
       flex: 1,
-      minWidth: 180,
+      minWidth: 200,
       headerAlign: "center",
       align: "center",
       renderCell: (params: any) => {
@@ -139,7 +139,7 @@ const Homepage = () => {
       field: "dlh_clocking_date_to",
       headerName: "Clocking To",
       flex: 1,
-      minWidth: 180,
+      minWidth: 200,
       headerAlign: "center",
       align: "center",
       renderCell: (params: any) => {

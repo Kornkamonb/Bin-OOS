@@ -47,7 +47,9 @@ export const use_feature = () => {
   const fetchDistinctDept = useCallback(() => {
     if (!select_dateFrom || !select_dateTo) return;
     axiosGet(
-      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-month/get-available-departments",
+      `${
+        import.meta.env.VITE_IP_API_NEST
+      }/smart-ot-summary/smart-ot-summary-by-month/get-available-departments`,
       {
         dateFrom: toDDMMYYYY(select_dateFrom),
         dateTo: toDDMMYYYY(select_dateTo),
@@ -59,7 +61,9 @@ export const use_feature = () => {
   const fetchDistinctDiv = useCallback(() => {
     if (!selectedDept) return;
     axiosGet(
-      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-month/get-available-divisions",
+      `${
+        import.meta.env.VITE_IP_API_NEST
+      }/smart-ot-summary/smart-ot-summary-by-month/get-available-divisions`,
       {
         dateFrom: toDDMMYYYY(select_dateFrom),
         dateTo: toDDMMYYYY(select_dateTo),
@@ -72,7 +76,9 @@ export const use_feature = () => {
   const fetchDataTable = useCallback(() => {
     if (!selectedDiv || !selectedDept) return;
     axiosGet(
-      "http://127.0.0.1:3000/api/nest/smart-ot-summary/smart-ot-summary-by-month/get-table",
+      `${
+        import.meta.env.VITE_IP_API_NEST
+      }/smart-ot-summary/smart-ot-summary-by-month/get-table`,
       {
         dateFrom: toDDMMYYYY(select_dateFrom),
         dateTo: toDDMMYYYY(select_dateTo),
