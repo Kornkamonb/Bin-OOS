@@ -87,6 +87,12 @@ export const use_feature = () => {
   // โหลด department เมื่อวันที่เปลี่ยน
   useEffect(fetchDistinctDept, [fetchDistinctDept]);
 
+  useEffect(() => {
+    setTableData([]);
+    setSelectedDept("");
+    setSelectedDiv("");
+  }, [select_dateTo, select_dateFrom]);
+
   // โหลด division เมื่อ department เปลี่ยน
   useEffect(() => {
     if (selectedDept) fetchDistinctDiv();

@@ -12,7 +12,6 @@ const Homepage = () => {
     setSelectedDept,
 
     tableData,
-    setTableData,
     fetchDataTable,
 
     deptData,
@@ -135,10 +134,9 @@ const Homepage = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-8">
-      {/* Text Inputs Section */}
       <div className="space-y-4">
         <h1 className="text-xl font-semibold text-gray-700">
-          OT Summary By Day
+          OT Summary By Month
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="flex flex-col">
@@ -210,7 +208,6 @@ const Homepage = () => {
         </div>
       </div>
 
-      {/* Table Section */}
       <div></div>
       <div>
         <DataGrid

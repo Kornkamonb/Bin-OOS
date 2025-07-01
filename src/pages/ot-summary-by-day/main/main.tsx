@@ -12,7 +12,7 @@ const Homepage = () => {
     setSelectedDept,
 
     tableData,
-    setTableData,
+
     fetchDataTable,
 
     deptData,

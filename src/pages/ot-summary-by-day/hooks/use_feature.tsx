@@ -3,12 +3,10 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback } from "react";
 
-/** แปลงวันที่ใด ๆ ให้เป็น DD-MM-YYYY (รองรับฟอร์แมทเก่า) */
 const toDDMMYYYY = (d: string) =>
   dayjs(d, ["YYYY-MM-DD", "DD-MM-YYYY"]).format("DD-MM-YYYY");
 
 export const use_feature = () => {
-  /* ---------- state ---------- */
   const [tableData, setTableData] = useState<any[]>([]);
   const [deptData, setDeptData] = useState<any[]>([]);
   const [divData, setDivData] = useState<any[]>([]);
@@ -26,7 +24,6 @@ export const use_feature = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  /* ---------- helpers ---------- */
   const axiosGet = async <T,>(
     url: string,
     params: Record<string, unknown>,
@@ -43,7 +40,6 @@ export const use_feature = () => {
     }
   };
 
-  /* ---------- fetchers ---------- */
   const fetchDistinctDept = useCallback(() => {
     if (!select_dateFrom || !select_dateTo) return;
     axiosGet(
@@ -83,11 +79,14 @@ export const use_feature = () => {
     );
   }, [select_dateFrom, select_dateTo, selectedDiv, selectedDept]);
 
-  /* ---------- side‑effects ---------- */
-  // โหลด department เมื่อวันที่เปลี่ยน
   useEffect(fetchDistinctDept, [fetchDistinctDept]);
 
-  // โหลด division เมื่อ department เปลี่ยน
+  useEffect(() => {
+    setTableData([]);
+    setSelectedDept("");
+    setSelectedDiv("");
+  }, [select_dateTo, select_dateFrom]);
+
   useEffect(() => {
     if (selectedDept) fetchDistinctDiv();
     else {
@@ -97,36 +96,29 @@ export const use_feature = () => {
     }
   }, [selectedDept, fetchDistinctDiv]);
 
-  // เคลียร์ตารางถ้า div ถูกรีเซ็ต
   useEffect(() => {
     if (!selectedDiv) setTableData([]);
   }, [selectedDiv]);
 
-  /* ---------- exposed API ---------- */
   return {
-    /* loading / error */
     loading,
     error,
     setError,
 
-    /* selections */
     selectedDiv,
     setSelectedDiv,
     selectedDept,
     setSelectedDept,
 
-    /* date pickers */
     select_dateFrom,
     setSelect_dateFrom,
     select_dateTo,
     setSelect_dateTo,
 
-    /* data */
     tableData,
     deptData,
     divData,
 
-    /* actions */
     fetchDataTable,
   };
 };
