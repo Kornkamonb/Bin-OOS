@@ -53,9 +53,8 @@ const manifestForPlugIn: Partial<VitePWAOptions> = {
   },
 };
 export default defineConfig({
-  plugins: [react(), VitePWA(manifestForPlugIn), tailwindcss(),
-  ],
-  base: "/template-typescript",
+  plugins: [react(), VitePWA(manifestForPlugIn), tailwindcss()],
+  base: "/smart-ot-summary",
   build: {
     sourcemap: true,
   },

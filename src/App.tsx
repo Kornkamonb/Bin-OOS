@@ -13,10 +13,9 @@ import {
   createTheme,
 } from "@mui/material/styles";
 // Lazy load components
-const Smart_Bin_OOS = React.lazy(
+const Ot_summary_by_day = React.lazy(
   () => import("@/pages/ot-summary-by-day/main/main")
 );
-const Chart = React.lazy(() => import("@/pages/chart-analysis/main/page"));
 
 const Ot_summary_by_month = React.lazy(
   () => import("@/pages/ot-summary-by-month/main/main")
@@ -87,24 +86,24 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<Loading />}>
             <Routes>
-              <Route path="/template-typescript" element={<Layout />}>
+              <Route path="/smart-ot-summary" element={<Layout />}>
                 {/* Public Routes */}
                 <Route
                   index
                   element={
-                    <Navigate to="/template-typescript/homepage" replace />
+                    <Navigate
+                      to="/smart-ot-summary/ot-summary-by-day"
+                      replace
+                    />
                   }
                 />
                 <Route
-                  path="/template-typescript/homepage"
-                  element={<Smart_Bin_OOS />}
+                  path="/smart-ot-summary/ot-summary-by-day"
+                  element={<Ot_summary_by_day />}
                 />
+
                 <Route
-                  path="/template-typescript/chart-analysis"
-                  element={<Chart />}
-                />
-                <Route
-                  path="/template-typescript/ot-summary-by-month"
+                  path="/smart-ot-summary/ot-summary-by-month"
                   element={<Ot_summary_by_month />}
                 />
               </Route>

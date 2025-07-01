@@ -3,10 +3,9 @@ import { useLocation } from "react-router-dom";
 
 // Title mappings for paths
 const titleMap = {
-  "/template-typescript": "Template Typescript",
-  "/template-typescript/homepage": "OT Summary By Day",
-  "/template-typescript/chart-analysis": "Chart analysis",
-  "/template-typescript/ot-summary-by-month": "OT Summary By Month",
+  "/smart-ot-summary": "smart-ot-summary",
+  "/smart-ot-summary/ot-summary-by-day": "OT Summary By Day",
+  "/smart-ot-summary/ot-summary-by-month": "OT Summary By Month",
 };
 
 function Title() {

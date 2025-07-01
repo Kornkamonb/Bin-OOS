@@ -15,12 +15,17 @@ interface Link {
 // Component ที่ใช้กำหนดข้อมูล Link
 export const Link = () => {
   const Grp1: Link = {
-    Title: "TITLE",
+    Title: "Smart OT Summary",
     Iconsmain: Iconsmain, // ใช้การ import รูปภาพที่ถูกต้อง
     SubPath: [
-      { path: "/template-typescript/homepage", label: "OT Summary By Day" },
-      { path: "/template-typescript/chart-analysis", label: "Chart analysis" },
-      { path: "/template-typescript/ot-summary-by-month", label: "OT Summary By Month" },
+      {
+        path: "/smart-ot-summary/ot-summary-by-day",
+        label: "OT Summary By Day",
+      },
+      {
+        path: "/smart-ot-summary/ot-summary-by-month",
+        label: "OT Summary By Month",
+      },
     ],
   };
 
